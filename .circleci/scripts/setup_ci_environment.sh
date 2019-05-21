@@ -1,43 +1,17 @@
 #!/usr/bin/env bash
 set -ex -o pipefail
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
 # Check if we should actually run
 echo "BUILD_ENVIRONMENT: ${BUILD_ENVIRONMENT}"
 echo "CIRCLE_PULL_REQUEST: ${CIRCLE_PULL_REQUEST:-}"
-if [[ "${BUILD_ENVIRONMENT}" == *-slow-* ]]; then
-  if ! [ -z "${CIRCLE_PULL_REQUEST:-}" ]; then
-    # It's a PR; test for [slow ci] tag on the TOPMOST commit
-    topmost_commit=$(git log --format='%B' -n 1 HEAD)
-    if !(echo $topmost_commit | grep -q -e '\[slow ci\]' -e '\[ci slow\]' -e '\[test slow\]' -e '\[slow test\]'); then
-      circleci step halt
-      exit
-    fi
-  fi
-fi
-if [[ "${BUILD_ENVIRONMENT}" == *xla* ]]; then
-  if ! [ -z "${CIRCLE_PULL_REQUEST:-}" ]; then
-    # It's a PR; test for [xla ci] tag on the TOPMOST commit
-    topmost_commit=$(git log --format='%B' -n 1 HEAD)
-    if !(echo $topmost_commit | grep -q -e '\[xla ci\]' -e '\[ci xla\]' -e '\[test xla\]' -e '\[xla test\]'); then
-      # NB: This doesn't halt everything, just this job.  So
-      # the rest of the workflow will keep going and you need
-      # to make sure you halt there too.  Blegh.
-      circleci step halt
-      exit
-    fi
-  fi
-fi
-if [[ "${BUILD_ENVIRONMENT}" == *namedtensor* ]]; then
-  if ! [ -z "${CIRCLE_PULL_REQUEST:-}" ]; then
-    # It's a PR; test for [namedtensor] tag on the TOPMOST commit
-    topmost_commit=$(git log --format='%B' -n 1 HEAD)
-    if !(echo $topmost_commit | grep -q -e '\[namedtensor\]' -e '\[ci namedtensor\]' -e '\[namedtensor ci\]'); then
-      # NB: This doesn't halt everything, just this job.  So
-      # the rest of the workflow will keep going and you need
-      # to make sure you halt there too.  Blegh.
-      circleci step halt
-      exit
-    fi
+if ! [ -z "${CIRCLE_PULL_REQUEST:-}" ]; then
+  # Don't swallow "script doesn't exist
+  [ -e "$SCRIPT_DIR/should_run_job.py"  ]
+  if ! python "$SCRIPT_DIR/should_run_job.py" "${BUILD_ENVIRONMENT}"; then
+    circleci step halt
+    exit
   fi
 fi
 
