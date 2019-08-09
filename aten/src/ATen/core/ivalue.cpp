@@ -172,6 +172,10 @@ std::vector<std::pair<IValue, IValue>> iterationOrder(const c10::Dict<IValue, IV
   return ordered;
 }
 
+std::unordered_map<std::string, c10::StrongTypePtr>& getCustomClassStringTypeMap() {
+  static std::unordered_map<std::string, c10::StrongTypePtr> tmap;
+  return tmap;
+}
 std::unordered_map<std::string, c10::StrongTypePtr>& getCustomClassTypeMap() {
     static std::unordered_map<std::string, c10::StrongTypePtr> tmap;
     return tmap;
@@ -181,6 +185,13 @@ std::unordered_map<std::string, std::function<PyObject*(void*)>>&
 getClassConverter() {
   static std::unordered_map<std::string, std::function<PyObject*(void*)>>
       classConverter;
+  return classConverter;
+}
+
+using CustomClassPtr = c10::intrusive_ptr<torch::jit::CustomClassHolder>;
+std::unordered_map<std::string, std::function<CustomClassPtr(PyObject*)>>&
+getPythonToCppClassConverter() {
+  static std::unordered_map<std::string, std::function<CustomClassPtr(PyObject*)>> classConverter;
   return classConverter;
 }
 } // namespace c10

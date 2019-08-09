@@ -39,7 +39,6 @@ namespace detail {
 
   template<class T, bool AllowDeprecatedTypes, class Enable = void> struct assert_is_valid_input_type {
     assert_is_valid_input_type() {
-      auto tmap = c10::getCustomClassTypeMap();
       TORCH_CHECK(c10::isCustomClassRegistered<T>(), "Tried to use undefined class as input argument");
     }
   };
@@ -103,7 +102,6 @@ namespace detail {
 
   template<class T, bool AllowDeprecatedTypes, class Enable = void> struct assert_is_valid_output_type {
     assert_is_valid_output_type() {
-      auto tmap = getCustomClassTypeMap();
       TORCH_CHECK(c10::isCustomClassRegistered<T>(), "Tried to use undefined class as output");
     }
   };

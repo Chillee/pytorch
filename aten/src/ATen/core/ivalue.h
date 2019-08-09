@@ -577,6 +577,9 @@ struct StrongTypePtr {
   std::shared_ptr<ClassType> type_;
 };
 
+// Maps from qualified names to the corresponding StrongTypePtr
+TORCH_API std::unordered_map<std::string, c10::StrongTypePtr>& getCustomClassStringTypeMap();
+// Maps from typeid(T).name() to the corresponding StrongTypePtr
 TORCH_API std::unordered_map<std::string, c10::StrongTypePtr>& getCustomClassTypeMap();
 template<typename T>
 c10::StrongTypePtr getCustomClassType() {
@@ -594,8 +597,14 @@ inline bool isCustomClassRegistered() {
   return tmap.find(typeid(T).name()) != tmap.end();
 }
 
+// Maps from qualified name to a function that turns Foo pointers into the correct PyObject.
+// Used for converting from Torchscript to Python
 TORCH_API std::unordered_map<std::string, std::function<PyObject*(void*)>>&
 getClassConverter();
+
+// Maps from qualified name to a function that turns PyObject* into a Foo pointer.
+TORCH_API std::unordered_map<std::string, std::function<c10::intrusive_ptr<torch::jit::CustomClassHolder>(PyObject*)>>&
+getPythonToCppClassConverter();
 }
 
 #include <ATen/core/ivalue_inl.h>

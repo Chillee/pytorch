@@ -177,6 +177,13 @@ TypePtr ScriptTypeParser::parseTypeFromExpr(const Expr& expr) const {
     }
     return subscriptToType(*value_name, subscript);
   } else if (auto name = parseBaseTypeName(expr)) {
+    if (name->find("torch.classes.") != std::string::npos) {
+      auto tmap = c10::getCustomClassStringTypeMap();
+      auto res = tmap.find("__torch__.torch.classes.Foo");
+      if (res != tmap.end()) {
+        return res->second.type_;
+      }
+    }
     auto itr = ident_to_type_lut().find(*name);
     if (itr != ident_to_type_lut().end()) {
       return itr->second;

@@ -421,6 +421,14 @@ inline IValue toIValue(
     }
     case TypeKind::ClassType: {
       auto classType = type->expect<ClassType>();
+      // It's a custom class and needs to be handled specially
+      if (classType->qualname().find("__torch__.torch.classes") !=
+          std::string::npos) {
+        auto pyObj = obj.ptr();
+        auto classConverter =
+            c10::getPythonToCppClassConverter()[classType->qualname()];
+        return c10::ivalue::from(classConverter(pyObj));
+      }
       // 1. create a bare ivalue
       const size_t numAttrs = classType->numAttributes();
       auto cu = classType->compilation_unit();

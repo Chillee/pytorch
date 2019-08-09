@@ -90,7 +90,13 @@ class class_ {
       PyObject* rawPyObj = py_object.release().ptr();
       return rawPyObj;
     };
+    auto castFromPython = [](PyObject* obj) -> c10::intrusive_ptr<CurClass> {
+      auto pyObj = py::cast<py::object>(obj);
+      auto cppPtr = pyObj.cast<CurClass*>();
+      return c10::make_intrusive<CurClass>(*cppPtr);
+    };
     getClassConverter()[qualClassName] = castToPython;
+    getPythonToCppClassConverter()[qualClassName] = castFromPython;
 
     // We currently represent custom classes as torchscript classes with a
     // capsule attribute
@@ -103,6 +109,7 @@ class class_ {
                               StrongTypePtr(classCu, classTypePtr)});
     c10::getCustomClassTypeMap().insert({typeid(c10::tagged_capsule<CurClass>).name(),
                               StrongTypePtr(classCu, classTypePtr)});
+    c10::getCustomClassStringTypeMap().insert({qualClassName, StrongTypePtr(classCu, classTypePtr)});
 
     classCu->register_class(classTypePtr);
   }
