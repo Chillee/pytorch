@@ -1,0 +1,4 @@
+Constructing a placeholder with input shapes is too hard. We should be able to just pass in a static shape.
+Perhaps there should be a default dtype too?
+TVM allows you to query shape of already computed te.Tensor values.
+Also, I wonder if there's just unnecessary churn in APIs between NNC and TVM? Like, the order of the arguments.
